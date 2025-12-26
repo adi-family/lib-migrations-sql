@@ -1,4 +1,4 @@
-use lib_migrations_core::Migration;
+use lib_migrations_core::{Migration, Phase};
 
 /// Trait for SQL execution contexts.
 ///
@@ -16,6 +16,7 @@ pub trait SqlExecutor {
 pub struct SqlMigration {
     version: u64,
     name: String,
+    phase: Phase,
     up_sql: String,
     down_sql: Option<String>,
 }
@@ -26,9 +27,16 @@ impl SqlMigration {
         Self {
             version,
             name: name.into(),
+            phase: Phase::PreDeploy,
             up_sql: up_sql.into(),
             down_sql: None,
         }
+    }
+
+    /// Set the deployment phase
+    pub fn phase(mut self, phase: Phase) -> Self {
+        self.phase = phase;
+        self
     }
 
     /// Add rollback SQL
@@ -57,6 +65,11 @@ impl SqlMigration {
         &self.name
     }
 
+    /// Get the deployment phase
+    pub fn get_phase(&self) -> Phase {
+        self.phase
+    }
+
     /// Whether this migration has rollback SQL
     pub fn has_rollback(&self) -> bool {
         self.down_sql.is_some()
@@ -73,6 +86,10 @@ where
 
     fn name(&self) -> &str {
         &self.name
+    }
+
+    fn phase(&self) -> Phase {
+        self.phase
     }
 
     fn apply(&self, ctx: &mut Ctx) -> lib_migrations_core::Result<()> {
@@ -118,5 +135,15 @@ mod tests {
 
         assert!(!migration.has_rollback());
         assert_eq!(migration.down_sql(), None);
+    }
+
+    #[test]
+    fn test_sql_migration_phase() {
+        let pre = SqlMigration::new(1, "add_column", "ALTER TABLE users ADD email TEXT");
+        assert_eq!(pre.get_phase(), Phase::PreDeploy);
+
+        let post = SqlMigration::new(2, "drop_column", "ALTER TABLE users DROP old_column")
+            .phase(Phase::PostDeploy);
+        assert_eq!(post.get_phase(), Phase::PostDeploy);
     }
 }

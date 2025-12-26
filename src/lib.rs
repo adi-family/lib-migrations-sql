@@ -12,6 +12,6 @@ pub use sqlite::{SqliteContext, SqliteStore};
 
 // Re-export core types for convenience
 pub use lib_migrations_core::{
-    FnMigration, MemoryStore, Migration, MigrationRecord, MigrationRunner, MigrationStatus,
-    MigrationStore,
+    DryRunPlan, DryRunResult, FnMigration, MemoryStore, Migration, MigrationRecord,
+    MigrationRunner, MigrationStatus, MigrationStore, Phase,
 };

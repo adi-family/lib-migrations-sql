@@ -12,7 +12,7 @@ default = ["sqlite"]
 sqlite = ["rusqlite"]
 
 [dependencies]
-lib-migrations-core = { path = "../lib-migrations-core" }
+lib-migrations-core = { git = "https://github.com/adi-family/lib-migrations-core.git" }
 rusqlite = { version = "0.31", optional = true }
 thiserror = "2"
 
